@@ -28,7 +28,9 @@ class TrafficTCN(nn.Module):
         input: n * sequence_len (sequence_len:你准备用多长的序列预测下一个值，预先可以配置)
         emb: n * sequence_len * emb_size
         """
-        emb = self.drop(self.encoder(input.to(torch.int64)))
+        # input = input.to(torch.int64)
+        # input = self.encoder(input.to(torch.int64))*1000
+        emb = self.drop(self.encoder(input.to(torch.int64))*1000)
         """
         emb.transpose(1,2): n * emb_size * sequence_len
         y :                 n *  sequence_len * channes[-1]

@@ -29,6 +29,8 @@ class TemporalBlock(nn.Module):
 
         self.net = nn.Sequential(self.conv1, self.chomp1, self.relu1, self.dropout1,
                                  self.conv2, self.chomp2, self.relu2, self.dropout2)
+        # self.net_1 = nn.Sequential(self.conv1, self.chomp1, self.relu1, self.dropout1)
+        # self.net_2 = nn.Sequential(self.conv2, self.chomp2, self.relu2, self.dropout2)
 
         self.downsample = nn.Conv1d(n_inputs, n_outputs, 1) if n_inputs != n_outputs else None # 1x1 conv
         self.relu = nn.ReLU()
@@ -44,7 +46,10 @@ class TemporalBlock(nn.Module):
         """
         x: n*emb_size*seq_len
         out: n*layer_outchannel* seq_len"""
+
         out = self.net(x)
+        # out = self.net_1(x)
+        # out = self.net_2(out)
         res = x if self.downsample is None else self.downsample(x)
         return self.relu(out + res)
 

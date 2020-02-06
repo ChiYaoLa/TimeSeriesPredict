@@ -20,19 +20,19 @@ parser.add_argument('--batch_size', type=int, default=7, metavar='N',
                     help='batch size (default: 7)')
 parser.add_argument('--cuda', action='store_false',default=False,
                     help='use CUDA (default: False)')
-parser.add_argument('--dropout', type=float, default=0.45,
+parser.add_argument('--dropout', type=float, default=0.20,
                     help='dropout applied to layers (default: 0.45)')
 parser.add_argument('--emb_dropout', type=float, default=0.25,
                     help='dropout applied to the embedded layer (default: 0.25)')
 parser.add_argument('--clip', type=float, default=0.35,
                     help='gradient clip, -1 means no clip (default: 0.35)')
-parser.add_argument('--epochs', type=int, default=60,
+parser.add_argument('--epochs', type=int, default=20,
                     help='upper epoch limit (default: 30)') # 偷个懒
-parser.add_argument('--ksize', type=int, default=3,
+parser.add_argument('--ksize', type=int, default=6,
                     help='kernel size (default: 3)')
 parser.add_argument('--data', type=str, default='F:\MLDL\pytorch\TimeSeriesPredict\dataset\\3005',
                     help='location of the dataset (default: dataset/)')
-parser.add_argument('--emsize', type=int, default=70,
+parser.add_argument('--emsize', type=int, default=100,
                     help='size of embeddings vector (default: 70)')
 parser.add_argument('--levels', type=int, default=4,
                     help='# of levels (default: 4)')
@@ -72,8 +72,9 @@ test_data = batchfy(loader.test,40,args)  #
 valid_data = batchfy(loader.valid,40,args)
 
 
-# step-2: load in model
+# step-2: load in model  ffffffff
 channel_size = [args.nhid]*(args.levels-1) + [args.emsize] # 这里可以自定义,建议调参看看
+# channel_size = [args.nhid]*(args.levels-1) + [args.emsize] # 这里可以自定义,建议调参看看
 # n_cates = len(loader.dictionary.vals_set)  # emsize 为n_cates就是稀疏onehot向量，还可以更小就更稠密
 n_cates = 100  #n_cates至少是args.emsize这么大
 model = TrafficTCN(args.emsize,n_cates,channel_size,
@@ -151,22 +152,18 @@ def evaluate(data_source,type):
         final_target = target.contiguous().view(-1)
         loss = criterion(final_output, final_target)
 
-
         epoch_final_output = torch.cat([epoch_final_output,final_output[:args.window_len]],dim=0)
         epoch_final_target = torch.cat([epoch_final_target, final_target[:args.window_len]], dim=0)
-
 
         # writer.add_scalar(type+"_loss",loss.detach().numpy(),batch_idx)
         """就是加权算loss"""
         total_loss += args.window_len*loss.data
         total_data_len += args.window_len
 
-
     predict_values = torch.max(epoch_final_output, 1)[1]
     target_values = epoch_final_target
     val_len = target_values.size(0)
-    # vis.line(Y=predict_values)
-    # vis.line(Y=target_values)
+
     vis.line(Y=torch.stack([predict_values,target_values],dim=1),X=torch.arange(val_len),opts=dict(
         legend=["预测值","真实值"],xtrickstep=1,ytrickstep=1
     ))
