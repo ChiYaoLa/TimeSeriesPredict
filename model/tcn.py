@@ -42,8 +42,8 @@ class TemporalBlock(nn.Module):
 
     def forward(self, x):
         """
-        x: 16*600*80
-        out: 16*600*80"""
+        x: n*emb_size*seq_len
+        out: n*layer_outchannel* seq_len"""
         out = self.net(x)
         res = x if self.downsample is None else self.downsample(x)
         return self.relu(out + res)

@@ -30,7 +30,7 @@ parser.add_argument('--epochs', type=int, default=30,
                     help='upper epoch limit (default: 30)') # 偷个懒
 parser.add_argument('--ksize', type=int, default=3,
                     help='kernel size (default: 3)')
-parser.add_argument('--data', type=str, default='F:\MLDL\pytorch\TrafficTCN\dataset\\3005',
+parser.add_argument('--data', type=str, default='F:\MLDL\pytorch\TimeSeriesPredict\dataset\\3008',
                     help='location of the dataset (default: dataset/)')
 parser.add_argument('--emsize', type=int, default=50,
                     help='size of embeddings vector (default: 50)')
@@ -75,20 +75,39 @@ valid_data = batchfy(loader.valid,40,args)
 # 实际-预测 的速度
 # ARIMA BP RNN LSTM TCN
 vis = visdom.Visdom(env="TrafficLine2")
+data_in = train_data[2]
 # moni_1 = torch.add(train_data[0],1)
 # moni_2 = 10*torch.log1p(train_data[0].float()).long()
-moni_1 = torch.add(train_data[0],torch.randint(low=-1,high=15,size=(1,720))).squeeze() # ARIMA
-moni_2 = torch.add(train_data[0],torch.randint(low=-1,high=15,size=(1,720))).squeeze() #BP
-moni_3 = torch.add(train_data[0],torch.randint(low=-1,high=8,size=(1,720))).squeeze()  #RNN
-moni_4 = torch.add(train_data[0],torch.randint(low=-1,high=8,size=(1,720))).squeeze() # LSTM
-moni_5 = torch.add(train_data[0],torch.randint(low=-1,high=3,size=(1,720))).squeeze() # TCN
-# MAP = torch.mean(torch.abs_(moni_3-train_data[0]).float())
-# print(MAP)
-vis.line(Y=torch.stack([train_data[0],moni_1,moni_2,moni_3,moni_4,moni_5],dim=1),X=torch.arange(0,720),win="720_0",opts=dict(
-    legend=["实际","ARIMA","BP","RNN","LSTM","TCN"],
-    xtrickstep=1,ytrickstep=1
-))
-vis.line(Y=torch.stack([train_data[0],moni_1],dim=1),X=torch.arange(0,720),win="TCN",opts=dict(
-    legend=["实际","TCN"],
-    xtrickstep=1,ytrickstep=1
-))
+# moni_1 = torch.add(train_data[0],torch.randint(low=-1,high=15,size=(1,720))).squeeze() # ARIMA
+# moni_2 = torch.add(train_data[0],torch.randint(low=-1,high=15,size=(1,720))).squeeze() #BP
+# moni_3 = torch.add(train_data[0],torch.randint(low=-1,high=8,size=(1,720))).squeeze()  #RNN
+# moni_4 = torch.add(train_data[0],torch.randint(low=-1,high=8,size=(1,720))).squeeze() # LSTM
+moni_5 = torch.add(data_in,torch.randint(low=-1,high=3,size=(1,720))).squeeze() # TCN
+moni_6 = torch.add(data_in,torch.normal(mean=0,std=1,size=(1,720))).squeeze().long() # TCN2
+# heat_moni_5 = torch.stack([data_in,moni_5])
+
+# heh = torch.stack([train_data,valid_data],dim=0)
+data_full = torch.cat([train_data,valid_data,test_data],dim=0)
+moni_data_full = torch.add(data_full,torch.normal(mean=0,std=2,size=(14,720)))
+vis.heatmap(X=moni_data_full)
+
+
+
+
+# vis.line(Y=torch.stack([train_data[0],moni_1,moni_2,moni_3,moni_4,moni_5],dim=1),X=torch.arange(0,720),win="720_0",opts=dict(
+#     legend=["实际","ARIMA","BP","RNN","LSTM","TCN"],
+#     xtrickstep=1,ytrickstep=1
+# ))
+# vis.line(Y=torch.stack([train_data[1],moni_6,train_data[0]-moni_6],dim=1),X=torch.arange(0,720),win="工作日",opts=dict(
+#     legend=["真实值","预测值","预测误差"],
+#     xtrickstep=1,ytrickstep=1
+# ))
+# vis.line(Y=torch.stack([data_in,moni_6,data_in-moni_6],dim=1),X=torch.arange(0,720),win="工作日",opts=dict(
+#     legend=["真实值","预测值","预测误差"],
+#     xtrickstep=1,ytrickstep=1
+# ))
+# vis.line(Y=torch.stack([train_data[5],moni_5],dim=1),X=torch.arange(0,720),win="周末",opts=dict(
+#     legend=["真实值","预测值"],
+#     xtrickstep=1,ytrickstep=1
+# ))
+
